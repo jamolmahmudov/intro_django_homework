@@ -1,4 +1,9 @@
 from django.http import HttpRequest, JsonResponse
+from tinydb import TinyDB,Query
+from tinydb.database import Document
+db = TinyDB('db.json')
+db=db.table("grocery")
+q = Query()
 import json
 data = {
     1: {
@@ -20,15 +25,27 @@ data = {
 # GET /grocery/price/<price> - this endpoint will display a list of fruits by specifying the fruit price in the URL.
 
 def get_all_items(request: HttpRequest):
-    return JsonResponse(data)
+    return JsonResponse({"result": db.all()})
 
-def add_item(request: HttpRequest):
+def get_add_fruits(request: HttpRequest):
     if request.method=='POST':
-        item=request.body
-        item=json.loads(item)
-        data[len(data)+1]=item
-        return JsonResponse(data)
+        data=request.body
+        data=json.loads(data)
+        db.insert(data)
+        return JsonResponse({"result": db.all()})
     else:
-        return JsonResponse({'status':'method is not POST'})
+        return JsonResponse({"status":"method error"})
+    
+def get_fruits_type(request: HttpRequest,type):
+    return JsonResponse({"result": db.search(q.type == type)})
+
+def get_fruits_name(request: HttpRequest, name):
+    return JsonResponse({"result":db.search(q.name == name)})
+
+def get_fruits_price(request: HttpRequest, price):
+    return JsonResponse({"result":db.search(q.price == price)})
+
+
+
 
 
